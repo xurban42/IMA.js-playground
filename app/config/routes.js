@@ -3,7 +3,8 @@ export var init = (ns, oc, config) => {
 	var ROUTES = oc.get('$ROUTE_NAMES');
 
 	router
-		.add('home', '/', ns.App.Page.Home.Controller, ns.App.Page.Home.View, {update:true})
+		.add('home', '/', ns.App.Page.Home.Controller, ns.App.Page.Home.View, { onlyUpdate: true })
+		.add('mode', '/:mode', ns.App.Page.Home.Controller, ns.App.Page.Home.View, { onlyUpdate: true })
 		.add(ROUTES.ERROR, '/error', ns.App.Page.Error.Controller, ns.App.Page.Error.View)
 		.add(ROUTES.NOT_FOUND, '/not-found', ns.App.Page.NotFound.Controller, ns.App.Page.NotFound.View);
 

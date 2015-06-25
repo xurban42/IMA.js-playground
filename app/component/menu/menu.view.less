@@ -1,0 +1,32 @@
+ul.menu {
+	position:fixed;
+	top: 0;
+	right: 0;
+	width:@panel-width;
+	height: 50px;
+	margin: 0;
+	padding:0;
+	z-index: 1000;
+	list-style: none;
+	background-color: brown;
+	color: white;
+	display: flex;
+	flex-flow: flex-end;
+
+	li {
+		flex: 1;
+		max-width: @panel-width/3;
+		line-height: 50px;
+
+		a {
+			display: block;
+			text-decoration: none;
+			color: inherit;
+		}
+
+		&:hover {
+			background-color: burlywood;
+			color: brown;
+		}
+	}
+}

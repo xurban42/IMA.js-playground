@@ -25,7 +25,6 @@ class Controller extends ns.App.Base.Controller {
 	/**
 	 * Callback for initializing the controller with the route parameters.
 	 *
-	 * @inheritdoc
 	 * @override
 	 * @method init
 	 */
@@ -54,7 +53,6 @@ class Controller extends ns.App.Base.Controller {
 	 * the controller's state using the field names used in the returned map
 	 * object.
 	 *
-	 * @inheritdoc
 	 * @override
 	 * @method load
 	 * @return {Object<string, (Vendor.Rsvp.Promise|*)>} A map object of promises
@@ -62,10 +60,14 @@ class Controller extends ns.App.Base.Controller {
 	 *         resolved values will be pushed to the controller's state.
 	 */
 	load() {
+		if (!this.params.mode) {
+			this._router.redirect(this._router.link('mode', Object.assign(this.params, { mode: 'search' })));
+		}
 
 		if (!this.params.x || !this.params.y || !this.params.z) {
-			this._router.redirect(this._router.link('home', {x:15.633985141083727, y:49.90602754389286, z:7 }));
+			this._router.redirect(this._router.link('mode', Object.assign(this.params, {x:15.633985141083727, y:49.90602754389286, z:7 })));
 		}
+
 		return {
 			//error: Promise.reject(new IMAError('Try error page.')),
 			//redirect: Promise.reject(new IMAError('Redirect from home page to error page for $Debug = false.', {status: 303, url: 'http://localhost:3001/not-found'})),
@@ -89,7 +91,6 @@ class Controller extends ns.App.Base.Controller {
 	 * listeners the controller may need to handle the user interaction with the
 	 * page.
 	 *
-	 * @inheritdoc
 	 * @override
 	 * @method activate
 	 */
@@ -102,7 +103,6 @@ class Controller extends ns.App.Base.Controller {
 	 * resources, the view has been rendered and (if at the client-side) the
 	 * controller has been provided with the rendered view.
 	 *
-	 * @inheritdoc
 	 * @override
 	 * @method setMetaParams
 	 * @param {Object<string, *>} loadedResources Map of resource names to
@@ -152,7 +152,6 @@ class Controller extends ns.App.Base.Controller {
 	 * automatically when the controller instance is destroyed by the garbage
 	 * collector.
 	 *
-	 * @inheritdoc
 	 * @override
 	 * @method destroy
 	 */
@@ -160,6 +159,12 @@ class Controller extends ns.App.Base.Controller {
 
 	onMapMoveEnd(e) {
 		console.log('controller: mapMoveEnd', e);
+	}
+
+	onChangeMode(e) {
+		console.log('Mode changed', e);
+		this.params.mode = e.mode;
+		this._router.redirect(this._router.link('mode', this.params));
 	}
 }
 
