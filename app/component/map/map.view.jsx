@@ -47,15 +47,14 @@ class View extends ns.Core.Abstract.Component {
 
 			console.log({x:coords[0], y:coords[1], z:zoom })
 
-			this.utils.$EventBus.fire(this.refs.map.getDOMNode(), 'mapMoveEnd', {
-				x: coords[0],
-				y: coords[1],
-				z: zoom
-			});
+			
 
 			if (this.props.map.x !=  coords[0] || this.props.map.y !=  coords[1] || this.props.map.z != zoom) {
-				console.log('redirect', this.utils.$Router.link('home', {x:coords[0], y:coords[1], z:zoom }));
-				this.utils.$Router.redirect(this.utils.$Router.link('home', {x:coords[0], y:coords[1], z:zoom }));
+				this.utils.$EventBus.fire(this.refs.map.getDOMNode(), 'mapMoveEnd', {
+					x: coords[0],
+					y: coords[1],
+					z: zoom
+				});
 			}
 	}
 

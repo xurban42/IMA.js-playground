@@ -3,12 +3,14 @@ module.exports = (function() {
 	var js = [
 		'./app/config/*.js',
 		'./app/base/*.js',
+		'./app/module/**/*.js',
 		'./app/page/*.js',
 		'./app/page/*.jsx',
 		'./app/page/**/*.js',
 		'./app/page/**/*.jsx',
 		'./app/component/**/*.js',
-		'./app/component/**/*.jsx'
+		'./app/component/**/*.jsx',
+
 	];
 
 	var less = [

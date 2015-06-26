@@ -16,10 +16,19 @@ class Controller extends ns.App.Base.Controller {
 	 * @method constructor
 	 * @constructor
 	 */
-	constructor(router) {
+	constructor(router, searchService) {
 		super();
 
 		this._router = router;
+
+		/**
+		 * Search Service to work with search state.
+		 *
+		 * @property _searchService
+		 * @private
+		 * @type {App.Module.Search.Service}
+		 */
+		this._searchService = searchService;
 	}
 
 	/**
@@ -29,6 +38,7 @@ class Controller extends ns.App.Base.Controller {
 	 * @method init
 	 */
 	init() {}
+
 
 	/**
 	 * Callback the controller uses to request the resources it needs to render
@@ -71,13 +81,29 @@ class Controller extends ns.App.Base.Controller {
 		return {
 			//error: Promise.reject(new IMAError('Try error page.')),
 			//redirect: Promise.reject(new IMAError('Redirect from home page to error page for $Debug = false.', {status: 303, url: 'http://localhost:3001/not-found'})),
-			message: `I am IMA.js!`,
+			mode: this.params.mode,
 			map: {
 				x: Number(this.params.x),
 				y: Number(this.params.y),
 				z: Number(this.params.z)
+			},
+			states: {
+				search: this._searchService.load(),
+				routes: {
+					state: { 
+						data1: 'search', data2: ['1','2']}
+				},
+				usermarks: {
+					state:{ data1: 'search', data2: ['1','2']}
+				}
 			}
-		};
+		}
+	}
+
+	update() {
+		var state = this.getState();
+		state.mode = this.params.mode;
+		return state;
 	}
 
 	/**
@@ -158,13 +184,11 @@ class Controller extends ns.App.Base.Controller {
 	destroy() {}
 
 	onMapMoveEnd(e) {
-		console.log('controller: mapMoveEnd', e);
+		this._router.redirect(this._router.link('mode', Object.assign(this.params, {x:e.x, y:e.y, z:e.z })));
 	}
 
 	onChangeMode(e) {
-		console.log('Mode changed', e);
-		this.params.mode = e.mode;
-		this._router.redirect(this._router.link('mode', this.params));
+		this._router.redirect(this._router.link('mode', Object.assign(this.params, {mode: e.mode })));
 	}
 }
 

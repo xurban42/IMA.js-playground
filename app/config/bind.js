@@ -1,7 +1,9 @@
 export var init = (ns, oc, config) => {
 
+	oc.bind('SearchService', ns.App.Module.Search.Service);
+
 	// Page Home
-	oc.inject(ns.App.Page.Home.Controller, ['$Router']);
+	oc.inject(ns.App.Page.Home.Controller, ['$Router', 'SearchService']);
 
 	// Page Error
 	oc.inject(ns.App.Page.Error.Controller, []);

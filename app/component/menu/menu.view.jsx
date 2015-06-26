@@ -27,7 +27,7 @@ class View extends ns.Core.Abstract.Component {
 			},
 			{
 				title: 'User Marks',
-				slug: 'user-marks',
+				slug: 'usermarks',
 				active: false
 			}
 		]
@@ -37,7 +37,7 @@ class View extends ns.Core.Abstract.Component {
 
 		var menuItems = this.items.map( (mode, index) => {
 			
-			var activeClass = (this.props.active == mode.slug)?'active':'';
+			var activeClass = (this.props.mode == mode.slug)?'active':'';
 
 			return (
 				<li key={index} className={activeClass}>
