@@ -1,3 +1,6 @@
+/**
+ * Created by slavek on 29.10.14.
+ */
 var gulp = require('gulp');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
@@ -29,9 +32,7 @@ var messageFormat = require('gulp-messageformat');
 var save = require('gulp-save');
 var change = require('gulp-change');
 var minifyCSS = require('gulp-minify-css');
-var autoprefixer = require('gulp-autoprefixer');
 var eslint = require('gulp-eslint');
-var gulpCommand = require('gulp-command')(gulp);
 
 var coreDependency = require('./imajs/build.js');
 
@@ -52,13 +53,6 @@ try {
 
 var watchEvent = null;
 var server = null;
-
-var uglifyCompression = {
-	global_defs: {
-		$Debug: true
-	},
-	dead_code: true
-};
 
 var files = {
 	vendor: {
@@ -94,9 +88,7 @@ var files = {
 		watch: ['./server/*.js', './server/**/*.js', './app/environment.js', './imajs/server/*.js']
 	},
 	less: {
-		cwd: '/',
-		base: './app/assets/less/',
-		name: './app/assets/less/app.less',
+		name: 'app.less',
 		src: appDependency.less,
 		dest: './build/static/css/',
 		watch: ['./app/**/*.less', '!./app/assets/bower/']
@@ -131,13 +123,20 @@ var files = {
 	},
 	bundle: {
 		js: {
-			name: 'app.bundle.min.js',
-			src: appDependency.bundle.js,
+			name: 'app.bundle.js',
+			src: [
+				'./build/static/js/polyfill.js',
+				'./build/static/js/shim.js',
+				'./build/static/js/vendor.client.js',
+				'./build/static/js/app.client.js'
+			].concat(appDependency.bundle.js),
 			dest: './build/static/js/'
 		},
 		css: {
-			name: 'app.bundle.min.css',
-			src: appDependency.bundle.css,
+			name: 'app.min.css',
+			src: [
+				'./build/static/css/app.css'
+			].concat(appDependency.bundle.css),
 			dest: './build/static/css/'
 		}
 	},
@@ -180,7 +179,7 @@ var resolveNewPath = function(newBase){
  */
 var documentationPreprocessors = [
 	{
-		pattern: /\/[*][*]((?:a|[^a])*?)(?: |\t)*[*]\s*@(?:override|inheritDoc|abstract)\n((a|[^a])*)[*]\//g,
+		pattern: /\/[*][*]((?:a|[^a])*?)(?: |\t)*[*]\s*@(?:override|inheritdoc|abstract)\n((a|[^a])*)[*]\//g,
 		replace: '/**$1$2*/'
 	},
 	{
@@ -234,21 +233,15 @@ gulp.task('dev', function(callback) {
 	);
 });
 
-gulp
-	.option('build', '-e, --env', 'Build environment')
-	.task('build', function(callback) {
-
-		if (this.flags.env === 'prod') {
-			uglifyCompression.global_defs.$Debug = false;
-		}
-		return runSequence(
-			['copy:appStatic', 'copy:imajsServer', 'copy:environment', 'shim', 'polyfill'], //copy folder public, concat shim
-			['Es6ToEs5:client', 'Es6ToEs5:server', 'Es6ToEs5:vendor'], // convert app and vendor script
-			['vendor:client', 'vendor:server', 'less', 'doc', 'locale'], // adjust vendors, compile less, create doc,
-			['bundle:js:app', 'bundle:js:server', 'bundle:css'],
-			['vendor:clean', 'bundle:clean'],// clean vendor
-			callback
-		);
+gulp.task('build', function(callback) {
+	return runSequence(
+		['copy:appStatic', 'copy:imajsServer', 'copy:environment', 'shim', 'polyfill'], //copy folder public, concat shim
+		['Es6ToEs5:client', 'Es6ToEs5:server', 'Es6ToEs5:vendor'], // convert app and vendor script
+		['vendor:client', 'vendor:server', 'less', 'doc', 'locale'], // adjust vendors, compile less, create doc,
+		['bundle:js', 'bundle:css'],
+		['vendor:clean', 'bundle:clean'],// clean vendor
+		callback
+	);
 });
 
 gulp.task('test', function() {
@@ -346,7 +339,7 @@ gulp.task('server:reload', function(callback) {
 	setTimeout(function() {
 		server.notify(watchEvent);
 		callback();
-	}, 2000);
+	}, 1750);
 });
 
 gulp.task('devTest', function() {
@@ -473,23 +466,13 @@ gulp.task('Es6ToEs5:client', function() {
 		return !!file.relative.match(jsx);
 	}
 
-	function handleError (error) {
-		gutil.log(
-			gutil.colors.red('Es6ToEs5:client:error'),
-			error.toString()
-		);
-
-		this.emit('end');
-		this.end();
-	}
-
 	return (
 		gulp.src(files.app.src)
 			.pipe(resolveNewPath('/'))
 			.pipe(plumber())
 			.pipe(sourcemaps.init())
 			.pipe(cache('Es6ToEs5:client'))
-			.pipe(gulpif(isJSX, react({harmony: false, es6module: true}), gutil.noop()).on('error', handleError))
+			.pipe(gulpif(isJSX, react({harmony: false, es6module: true}), gutil.noop()))
 			.pipe(traceur({modules: 'inline', moduleName: true, sourceMaps: true}))
 			.pipe(gulpif(isView, sweetjs({
 				modules: ['./imajs/macro/react.sjs', './imajs/macro/componentName.sjs'],
@@ -555,9 +538,8 @@ gulp.task('less', function() {
 		gulp.src(files.less.src)
 			.pipe(plumber())
 			.pipe(sourcemaps.init())
-			.pipe(concat({path: files.less.name, base: files.less.base, cwd: files.less.cwd}))
+			.pipe(concat(files.less.name))
 			.pipe(less({compress: true, paths: [ path.join(__dirname) ]}))
-			.pipe(autoprefixer())
 			.pipe(sourcemaps.write())
 			.pipe(plumber.stop())
 			.pipe(gulp.dest(files.less.dest))
@@ -587,26 +569,14 @@ gulp.task('locale', function() {
 	return locales[locales.length - 1];
 });
 
-gulp.task('bundle:js:app', function() {
+gulp.task('bundle:js', function() {
 	return (
 		gulp.src(files.bundle.js.src)
 			.pipe(plumber())
 			.pipe(concat(files.bundle.js.name))
-			.pipe(uglify({mangle:true, compress: uglifyCompression}))
+			.pipe(uglify({mangle:true}))
 			.pipe(plumber.stop())
 			.pipe(gulp.dest(files.bundle.js.dest))
-	);
-});
-
-gulp.task('bundle:js:server', function() {
-	var file = files.app.dest.server + files.app.name.server;
-
-	return (
-		gulp.src(file)
-			.pipe(plumber())
-			.pipe(uglify({mangle:false, output: {beautify: true}, compress: uglifyCompression}))
-			.pipe(plumber.stop())
-			.pipe(gulp.dest(files.app.dest.server))
 	);
 });
 
@@ -635,11 +605,6 @@ gulp.task('app:hello', function() {
 
 gulp.task('app:feed', function() {
 	return gulp.src('./imajs/examples/feed/**/*')
-		.pipe(gulp.dest('./app'));
-});
-
-gulp.task('app:todos', function() {
-	return gulp.src('./imajs/examples/todos/**/*')
 		.pipe(gulp.dest('./app'));
 });
 

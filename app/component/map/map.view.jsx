@@ -36,26 +36,34 @@ class View extends ns.Core.Abstract.Component {
 	        })
 	      });
 		map.on('moveend', this.onMoveEnd.bind(this));
+
+		this.onMapCreated(map);
+	}
+
+	onMapCreated(map) {
+		this.utils.$EventBus.fire(this.refs.map.getDOMNode(), 'mapCreated', {
+				map
+			});
 	}
 
 	onMoveEnd(evt) {
 		var map = evt.map;
 		var view = map.getView();
 
-			var coords = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326');
-			var zoom = view.getZoom();
+		var coords = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326');
+		var zoom = view.getZoom();
 
-			console.log({x:coords[0], y:coords[1], z:zoom })
+		console.log({x:coords[0], y:coords[1], z:zoom })
 
-			
+		
 
-			if (this.props.map.x !=  coords[0] || this.props.map.y !=  coords[1] || this.props.map.z != zoom) {
-				this.utils.$EventBus.fire(this.refs.map.getDOMNode(), 'mapMoveEnd', {
-					x: coords[0],
-					y: coords[1],
-					z: zoom
-				});
-			}
+		if (this.props.map.x !=  coords[0] || this.props.map.y !=  coords[1] || this.props.map.z != zoom) {
+			this.utils.$EventBus.fire(this.refs.map.getDOMNode(), 'mapMoveEnd', {
+				x: coords[0],
+				y: coords[1],
+				z: zoom
+			});
+		}
 	}
 
 }

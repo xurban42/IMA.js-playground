@@ -18,6 +18,8 @@ class View extends ns.Core.Abstract.Component {
 	}
 
 	render() {
+		console.log('HOME VIEW STATE:', this.state);
+
 		var Menu = ns.App.Component.Menu.View; 
 		var Map = ns.App.Component.Map.View; 
 
@@ -30,7 +32,7 @@ class View extends ns.Core.Abstract.Component {
 				<Menu mode={mode} $Utils={this.utils} />
 					{controlView}
 				<div className='content'>
-					<Map map={this.state.map} $Utils={this.utils} />
+					<Map map={this.state.mapData} $Utils={this.utils} />
 				</div>
 			</div>
 		);
@@ -41,7 +43,7 @@ class View extends ns.Core.Abstract.Component {
 			case 'search': 
 				var Search = ns.App.Component.Search.View; 
 				return (
-					<Search data={data} />
+					<Search data={data} $Utils={this.utils} />
 				);
 			default: 
 				return null;

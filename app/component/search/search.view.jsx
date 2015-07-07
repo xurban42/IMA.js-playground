@@ -17,21 +17,49 @@ class View extends ns.Core.Abstract.Component {
 
 	render() {
 
-		var data = this.props.data;
+		var selectBox = this.getSelectBox('select-box', this.props.data);
 
 		return (
 			<div className='search'>
 				<label htmlFor='select-box'>SEARCH:&nbsp;</label>
-				<select id='select-box' onChange={(e)=>{ this.selectPlace(e); }}>
-				  <option value={data[0].value}>{data[0].title}</option>
-				  <option value={data[1].value}>{data[1].title}</option>
-				</select>
+				{selectBox}
 			</div>
 		);
 	}
 
+	getSelectBox(id, data) {
+		if (data) {
+			var optionsData = data.fakeData;
+			var searchedText = data.searchedText;
+
+			var options = optionsData.map((optionData)=> {
+				return (
+					<option key={optionData.value} value={optionData.value}>{optionData.title}</option>
+				);
+			});
+
+			return (
+				<select id={id} onChange={(e)=>{ this.selectPlace(e); }} defaultValue={searchedText} >
+					{options}
+				</select>
+			);
+			
+
+		}
+
+		return null;
+		
+	}
+
 	selectPlace(e) {
-		console.log(e);
+		var selectEl = e.currentTarget;
+		var selectedValue = selectEl.options[selectEl.selectedIndex].value;
+
+		this.utils
+				.$EventBus
+				.fire(selectEl, 'searchEvent', {
+					searchedText: selectedValue
+				});
 	}
 
 }

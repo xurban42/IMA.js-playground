@@ -16,10 +16,19 @@ class Controller extends ns.App.Base.Controller {
 	 * @method constructor
 	 * @constructor
 	 */
-	constructor(router, searchService) {
+	constructor(router, mapService, searchService) {
 		super();
 
 		this._router = router;
+
+		/**
+		 * Map service for working with map and map state.
+		 *
+		 * @property _mapService
+		 * @private
+		 * @type {App.Module.Map.Service}
+		 */
+		this._mapService = mapService;
 
 		/**
 		 * Search Service to work with search state.
@@ -29,6 +38,7 @@ class Controller extends ns.App.Base.Controller {
 		 * @type {App.Module.Search.Service}
 		 */
 		this._searchService = searchService;
+
 	}
 
 	/**
@@ -70,25 +80,30 @@ class Controller extends ns.App.Base.Controller {
 	 *         resolved values will be pushed to the controller's state.
 	 */
 	load() {
+		// Default mode
 		if (!this.params.mode) {
-			this._router.redirect(this._router.link('mode', Object.assign(this.params, { mode: 'search' })));
+			this._router.redirect(this._router.link('mode', Object.assign(this.params, { mode: 'search'})));
 		}
 
-		if (!this.params.x || !this.params.y || !this.params.z) {
-			this._router.redirect(this._router.link('mode', Object.assign(this.params, {x:15.633985141083727, y:49.90602754389286, z:7 })));
-		}
+		var searchedText = this.params.searchedText;
+
+		// because fake data
+		var mapData = null;
+		if (searchedText) {
+			var mapData = this._searchService.searchPlace(this.params, searchedText)
+		}		
 
 		return {
+			
 			//error: Promise.reject(new IMAError('Try error page.')),
 			//redirect: Promise.reject(new IMAError('Redirect from home page to error page for $Debug = false.', {status: 303, url: 'http://localhost:3001/not-found'})),
 			mode: this.params.mode,
-			map: {
-				x: Number(this.params.x),
-				y: Number(this.params.y),
-				z: Number(this.params.z)
-			},
+			mapData: this._mapService.load(this.params, mapData),
 			states: {
-				search: this._searchService.load(),
+				search: {
+					searchedText,
+					fakeData: this._searchService.load()
+				},
 				routes: {
 					state: { 
 						data1: 'search', data2: ['1','2']}
@@ -103,6 +118,7 @@ class Controller extends ns.App.Base.Controller {
 	update() {
 		var state = this.getState();
 		state.mode = this.params.mode;
+		state.states.search.searchedText = this.params.searchedText;
 		return state;
 	}
 
@@ -183,12 +199,23 @@ class Controller extends ns.App.Base.Controller {
 	 */
 	destroy() {}
 
+	onMapCreated(e) {
+		var state = this.getState();
+		state.map = e.map;
+		this.setState(state);
+	}
+
 	onMapMoveEnd(e) {
-		this._router.redirect(this._router.link('mode', Object.assign(this.params, {x:e.x, y:e.y, z:e.z })));
+		this._mapService.updateMapUrl(this.params, e.x, e.y, e.z);
 	}
 
 	onChangeMode(e) {
 		this._router.redirect(this._router.link('mode', Object.assign(this.params, {mode: e.mode })));
+	}
+
+	onSearchEvent(e) {
+		var placeToShowOnMap = this._searchService.searchPlace(this.params, e.searchedText);
+		this._mapService.showOnMap(this.params, this.getState().map, placeToShowOnMap);
 	}
 }
 
