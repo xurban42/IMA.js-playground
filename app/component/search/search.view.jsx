@@ -21,13 +21,17 @@ class View extends ns.Core.Abstract.Component {
 
 		return (
 			<div className='search'>
-				SEARCH:&nbsp;
-				<select>
+				<label htmlFor='select-box'>SEARCH:&nbsp;</label>
+				<select id='select-box' onChange={(e)=>{ this.selectPlace(e); }}>
 				  <option value={data[0].value}>{data[0].title}</option>
 				  <option value={data[1].value}>{data[1].title}</option>
 				</select>
 			</div>
 		);
+	}
+
+	selectPlace(e) {
+		console.log(e);
 	}
 
 }
