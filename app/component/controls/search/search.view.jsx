@@ -1,11 +1,10 @@
 import ns from 'imajs/client/core/namespace.js';
 
-ns.namespace('App.Component.Search');
+ns.namespace('App.Component.Controls.Search');
 
 /**
- * AdditionalInfo of one game.
  * @class View
- * @namespace App.Component.Search
+ * @namespace App.Component.Controls.Search
  * @module App
  * @submodule App.Component
  */
@@ -19,9 +18,11 @@ class View extends ns.Core.Abstract.Component {
 
 		var selectBox = this.getSelectBox('select-box', this.props.data);
 
+		var className = 'search'+(this.props.className?' '+this.props.className:'');
+
 		return (
-			<div className='search'>
-				<label htmlFor='select-box'>SEARCH:&nbsp;</label>
+			<div className={className}>
+				<label htmlFor='select-box'>Show:&nbsp;</label>
 				{selectBox}
 			</div>
 		);
@@ -29,12 +30,12 @@ class View extends ns.Core.Abstract.Component {
 
 	getSelectBox(id, data) {
 		if (data) {
-			var optionsData = data.fakeData;
-			var searchedText = data.searchedText;
+			var optionsData = data.UIData;
+			var searchedText = data.searchedPlace?data.searchedPlace.searchedText:optionsData[0].searchedText;
 
 			var options = optionsData.map((optionData)=> {
 				return (
-					<option key={optionData.value} value={optionData.value}>{optionData.title}</option>
+					<option key={optionData.searchedText} value={optionData.searchedText}>{optionData.searchedText}</option>
 				);
 			});
 
@@ -64,4 +65,4 @@ class View extends ns.Core.Abstract.Component {
 
 }
 
-ns.App.Component.Search.View = View;
+ns.App.Component.Controls.Search.View = View;

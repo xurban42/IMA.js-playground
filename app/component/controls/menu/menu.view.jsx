@@ -1,11 +1,10 @@
 import ns from 'imajs/client/core/namespace.js';
 
-ns.namespace('App.Component.Menu');
+ns.namespace('App.Component.Controls.Menu');
 
 /**
- * AdditionalInfo of one game.
  * @class View
- * @namespace App.Component.Menu
+ * @namespace App.Component.Controls.Menu
  * @module App
  * @submodule App.Component
  */
@@ -61,4 +60,4 @@ class View extends ns.Core.Abstract.Component {
 	}
 }
 
-ns.App.Component.Menu.View = View;
+ns.App.Component.Controls.Menu.View = View;

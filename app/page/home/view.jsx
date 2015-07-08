@@ -20,34 +20,30 @@ class View extends ns.Core.Abstract.Component {
 	render() {
 		console.log('HOME VIEW STATE:', this.state);
 
-		var Menu = ns.App.Component.Menu.View; 
+		var ControlPanel = ns.App.Component.Controls.ControlPanel.View; 
 		var Map = ns.App.Component.Map.View; 
 
 		var mode = this.state.mode;
-
-		var controlView = this.getControlViewByMode(mode, this.state.states[mode]);
+		var states = this.state.states;
 
 		return (
 			<div className='l-homepage'>
-				<Menu mode={mode} $Utils={this.utils} />
-					{controlView}
+				<ControlPanel 
+						mode={mode} 
+						routesData={this.state.routes} 
+						searchData={this.state.search}
+						$Utils={this.utils} />
+
 				<div className='content'>
-					<Map map={this.state.mapData} $Utils={this.utils} />
+					<Map
+							place={this.state.mapPlace}
+							displayedRoute={this.state.routes.route} 
+							searchedPlace={this.state.search.seachedPlace} 
+							$Utils={this.utils} />
+
 				</div>
 			</div>
 		);
-	}
-
-	getControlViewByMode(mode, data) {
-		switch (mode) {
-			case 'search': 
-				var Search = ns.App.Component.Search.View; 
-				return (
-					<Search data={data} $Utils={this.utils} />
-				);
-			default: 
-				return null;
-		}
 	}
 
 	

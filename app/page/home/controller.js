@@ -16,28 +16,14 @@ class Controller extends ns.App.Base.Controller {
 	 * @method constructor
 	 * @constructor
 	 */
-	constructor(router, mapService, searchService) {
+	constructor(router, mapService, searchService, routesService) {
 		super();
 
 		this._router = router;
 
-		/**
-		 * Map service for working with map and map state.
-		 *
-		 * @property _mapService
-		 * @private
-		 * @type {App.Module.Map.Service}
-		 */
 		this._mapService = mapService;
-
-		/**
-		 * Search Service to work with search state.
-		 *
-		 * @property _searchService
-		 * @private
-		 * @type {App.Module.Search.Service}
-		 */
 		this._searchService = searchService;
+		this._routesService = routesService;
 
 	}
 
@@ -85,40 +71,23 @@ class Controller extends ns.App.Base.Controller {
 			this._router.redirect(this._router.link('mode', Object.assign(this.params, { mode: 'search'})));
 		}
 
-		var searchedText = this.params.searchedText;
-
-		// because fake data
-		var mapData = null;
-		if (searchedText) {
-			var mapData = this._searchService.searchPlace(this.params, searchedText)
-		}		
-
 		return {
 			
 			//error: Promise.reject(new IMAError('Try error page.')),
 			//redirect: Promise.reject(new IMAError('Redirect from home page to error page for $Debug = false.', {status: 303, url: 'http://localhost:3001/not-found'})),
 			mode: this.params.mode,
-			mapData: this._mapService.load(this.params, mapData),
-			states: {
-				search: {
-					searchedText,
-					fakeData: this._searchService.load()
-				},
-				routes: {
-					state: { 
-						data1: 'search', data2: ['1','2']}
-				},
-				usermarks: {
-					state:{ data1: 'search', data2: ['1','2']}
-				}
-			}
+			mapPlace: this._mapService.load(this.params),
+			search: this._searchService.load(this.params),
+			routes: this._routesService.load(this.params)
 		}
 	}
+
 
 	update() {
 		var state = this.getState();
 		state.mode = this.params.mode;
-		state.states.search.searchedText = this.params.searchedText;
+		state = this._routesService.update(this.params, state);
+		state = this._searchService.update(this.params, state);
 		return state;
 	}
 
@@ -169,18 +138,6 @@ class Controller extends ns.App.Base.Controller {
 
 		metaManager.setMetaName('description', description);
 		metaManager.setMetaName('keywords', 'IMA.js, isomorphic application, javascript');
-
-		metaManager.setMetaName('twitter:title', title);
-		metaManager.setMetaName('twitter:description', description);
-		metaManager.setMetaName('twitter:card', 'summary');
-		metaManager.setMetaName('twitter:image', image);
-		metaManager.setMetaName('twitter:url', url);
-
-		metaManager.setMetaProperty('og:title', title);
-		metaManager.setMetaProperty('og:description', description);
-		metaManager.setMetaProperty('og:type', 'website');
-		metaManager.setMetaProperty('og:image', image);
-		metaManager.setMetaProperty('og:url', url);
 	}
 
 	/**
@@ -198,6 +155,8 @@ class Controller extends ns.App.Base.Controller {
 	 * @method destroy
 	 */
 	destroy() {}
+
+	// ******************************* Event Listeners ************************************** //
 
 	onMapCreated(e) {
 		var state = this.getState();
@@ -217,6 +176,14 @@ class Controller extends ns.App.Base.Controller {
 		var placeToShowOnMap = this._searchService.searchPlace(this.params, e.searchedText);
 		this._mapService.showOnMap(this.params, this.getState().map, placeToShowOnMap);
 	}
+
+	onShowRoute(e) {
+
+		var vectorLayer = this._routesService.getRoute(this.params, e.name);
+		this._mapService.showRoute(this.params, this.getState().map, vectorLayer);
+	}
+
+	// ******************************* ~ Event Listeners ************************************ //
 }
 
 ns.App.Page.Home.Controller = Controller;

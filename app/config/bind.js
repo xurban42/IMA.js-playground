@@ -2,9 +2,10 @@ export var init = (ns, oc, config) => {
 
 	oc.bind('MapService', ns.App.Module.Map.Service, ['$Router']);
 	oc.bind('SearchService', ns.App.Module.Search.Service, ['$Router']);
+	oc.bind('RoutesService', ns.App.Module.Routes.Service, ['$Router']);
 
 	// Page Home
-	oc.inject(ns.App.Page.Home.Controller, ['$Router', 'MapService', 'SearchService']);
+	oc.inject(ns.App.Page.Home.Controller, ['$Router', 'MapService', 'SearchService', 'RoutesService']);
 
 	// Page Error
 	oc.inject(ns.App.Page.Error.Controller, []);

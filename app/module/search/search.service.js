@@ -25,15 +25,25 @@ class Service extends ns.App.Base.Service {
 
 		this.fakeData = [
 			{ 
-				title: 'Czech Republic',
-				value: 'czech-republic',
+				searchedText: 'Czech Republic',
 				x:15.633985141083727,
 				y:49.90602754389286,
 				z:7
 			},
 			{ 
-				title: 'Prague',
-				value: 'prague',
+				searchedText: 'Brno',
+				x:16.611337764092596,
+				y:49.192242896838906,
+				z:14
+			},
+			{ 
+				searchedText: 'Plzeň',
+				x:13.377520841478788,
+				y:49.74774054844943,
+				z:14
+			},
+			{ 
+				searchedText: 'Prague',
 				x:14.42677579994968,
 				y:50.08895094406756,
 				z:14
@@ -41,22 +51,37 @@ class Service extends ns.App.Base.Service {
 		];
 	}
 
-	load() {
-		return this.fakeData;
+	load(params) {
+
+		return {
+			searchedPlace: this.searchPlace(params, params.searchedText),
+			UIData: this.fakeData
+		} 
 	}
 
-	searchPlace(params, value) {
-		var place = this
+	update (params, state) {
+		state.search.searchedPlace = this.searchPlace(params, params.searchedText);
+		return state;
+	}
+
+	searchPlace(params, searchedText) {
+		if (searchedText) {
+			var place = this
 				.fakeData
 				.filter((place) => {
-					return place.value === value;
+					return place.searchedText === searchedText;
 				})[0];
 
-		if (params.searchedText !== place.value) {
-			this._router.redirect(this._router.link('mode', Object.assign(params, { searchedText: place.value })));
+			if (params.searchedText !== searchedText) {
+				this._router.redirect(
+						this._router.link('mode', 
+								Object.assign(params, { searchedText: place.searchedText })));
+			}
+
+			return place;
 		}
 
-		return { x:place.x, y: place.y, z: place.z };
+		return null;
 	}
 }
 
