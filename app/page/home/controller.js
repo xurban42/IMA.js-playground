@@ -83,11 +83,11 @@ class Controller extends ns.App.Base.Controller {
 	}
 
 
-	update() {
+	update(params) {
 		var state = this.getState();
-		state.mode = this.params.mode;
-		state = this._routesService.update(this.params, state);
-		state = this._searchService.update(this.params, state);
+		state.mode = params.mode;
+		state = this._routesService.update(params, state);
+		state = this._searchService.update(params, state);
 		return state;
 	}
 
@@ -178,7 +178,6 @@ class Controller extends ns.App.Base.Controller {
 	}
 
 	onShowRoute(e) {
-
 		var vectorLayer = this._routesService.getRoute(this.params, e.name);
 		this._mapService.showRoute(this.params, this.getState().map, vectorLayer);
 	}

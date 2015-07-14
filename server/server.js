@@ -14,6 +14,7 @@ var cookieParser = require('cookie-parser');
 var methodOverride = require('method-override');
 var environment = require('./imajs/environment.js');
 var compression = require('compression');
+var helmet = require('helmet');
 
 GLOBAL.$Debug = environment.$Debug;
 
@@ -34,7 +35,13 @@ var allowCrossDomain = (req, res, next) => {
 };
 
 var renderApp = (req, res) => {
-	clientApp.response(req, res);
+	clientApp
+		.requestHandler(req, res)
+		.then((response) => {
+			//console.log('RESOLVE', response);
+		}, (error) => {
+			//console.log('REJECT', error, error.stack);
+		});
 };
 
 var errorHandler = (err, req, res, next) => {
@@ -49,7 +56,8 @@ var runNodeApp = () => {
 	var express = require('express');
 	var app = express();
 
-	app.use(compression())
+	app.use(helmet())
+		.use(compression())
 		.use(favicon(__dirname + '/static/img/favicon.ico'))
 		.use(environment.$Server.staticFolder, express.static(path.join(__dirname, 'static')))
 		.use(bodyParser.json()) // for parsing application/json
@@ -57,7 +65,6 @@ var runNodeApp = () => {
 		.use(multer()) // for parsing multipart/form-data
 		.use(cookieParser())
 		.use(methodOverride())
-		.use(allowCrossDomain)
 		.use(environment.$Server.apiUrl + '/', proxy)
 		.use(urlParser)
 		.use(renderApp)
@@ -94,4 +101,3 @@ if (environment.$Env === 'dev') {
 	}
 
 }
-
